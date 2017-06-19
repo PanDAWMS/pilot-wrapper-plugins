@@ -8,7 +8,7 @@ import time
 
 from base import Base
 import wrapperutils as utils
-import wrapperexceptions as wexceptions
+import wrapperexceptions as exceptions
 import validations
 import pilotsource
 
@@ -46,7 +46,7 @@ class atlas(Base):
     def __init__(self, opts):
      
         super(atlas,self).__init__(opts) 
-        ###self.source = utils.source()
+        self.source = utils.source()
 
         self.schedconfig = self._readschedconfig()
         if not self.schedconfig:
@@ -121,8 +121,10 @@ class atlas(Base):
 
     def _presetup(self):
         '''
+            
         method to source the content of AGIS field presetup 
         '''
+            
 
         self.log.debug('_presetup: Starting')
         rc = self._setupfromschedconfig('autosetup_pre') 
@@ -134,8 +136,10 @@ class atlas(Base):
 
     def _postsetup(self):
         '''
+            
         method to source the content of AGIS field postsetup 
         '''
+            
 
         self.log.debug('_postsetup: Starting')
         rc = self._setupfromschedconfig('autosetup_post') 
@@ -148,8 +152,10 @@ class atlas(Base):
 
     def _setupatlas(self):
         '''
+        
         source the global setup.sh global ATLAS setup file
         '''
+        
     
         self.log.debug('_setupatlas: Starting.')
     
@@ -162,8 +168,7 @@ class atlas(Base):
         else:
             cmd = 'source %s -s %s' %(setuppath, self.opts.wmsqueue)
             self.log.info('_setupatlas: sourcing command: %s' %cmd)
-            ###rc, out = self.source(cmd)
-            rc, out = utils.source(cmd)
+            rc, out = self.source(cmd)
             self.log.debug('_setupatlas: rc, output of sourcing cmd %s:\n%s\n%s' %(cmd, rc, out))
             utils._displayenv('local/setup.sh')
             utils._printsyspath('local/setup.sh')
@@ -190,8 +195,7 @@ class atlas(Base):
         else:
             cmd = 'source %s -s %s' %(setuppath, self.opts.wmsqueue)
             self.log.info('_setupddm: sourcing command: %s' %cmd)
-            ###rc, out = self.source(cmd)
-            rc, out = utils.source(cmd)
+            rc, out = self.source(cmd)
             self.log.debug('_setupddm: rc, output of sourcing cmd %s:\n%s\n%s' %(cmd, rc, out))
             utils._displayenv('ddm/latest/setup.sh')
             utils._printsyspath('ddm/latest/setup.sh')
@@ -282,8 +286,7 @@ class atlas(Base):
             setup = setup[7:]
 
         cmd = "source %s" %setup
-        ###rc, out = self.source(cmd) 
-        rc, out = utils.source(cmd) 
+        rc, out = self.source(cmd) 
         self.log.debug('_setupfromschedconfig: rc, output of sourcing cmd %s:\n%s\n%s' %(cmd, rc, out))
         utils._displayenv('setup')
         utils._printsyspath('setup')
@@ -304,6 +307,11 @@ class atlas(Base):
         self.log.debug('run: pilot args are = %s' %pilotargs)
 
         # import and invoke the ATLAS pilot code
+
+        # given wrapper.py is not located anymore in the current directory
+        # but it is where pilot.py has been downloaded,
+        # first we add the current directory to sys.path 
+        sys.path.append(os.getcwd())
         import pilot
         self.rc = pilot.runMain(pilotargs)
         

@@ -4,7 +4,7 @@
 this is the module wrapper.py
 '''
 
-wrapper_tarball_version = "1.0.1"
+wrapper_tarball_version = "1.0.3"
 
 import commands
 import getopt
@@ -221,6 +221,7 @@ class Execution(object):
                 except Exception, ex:
                         self.log.critical('execute: execution failed.') 
                         self.log.critical(ex)
+                        raise ex
 
                 self.log.debug('execute: Leaving')
 

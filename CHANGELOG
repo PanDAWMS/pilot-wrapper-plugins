@@ -1,6 +1,15 @@
-1.0.1
+1.0.3
 
-* 0.9.15 renamed 1.0.1
+* bug fixed: propagating raised exception in method Execution.execute()
+* aborting source() if the /tmp/ files have no content (something failed during the sourcing)
+* fixed typo: wexceptions instead of exceptions in plugin atlas.py
+
+0.9.16
+
+* aborting if pilot source code does not start by "http" nor "file"
+* in method PilotCodeSource._untar(), returning 0 if the pilot code is not a tarball
+* using method source( ) instead of class source( )
+* adding path to pilot code to sys.path from pilotsource.py
 
 0.9.15
 

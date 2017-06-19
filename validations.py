@@ -21,6 +21,9 @@ def _checkcvmfs():
     except subprocess.TimeoutExpired, ex:
         log.critical("command %s expired" %cmd)
         return 1
+    except Exception, ex:
+        log.critical("unrecognized exception %s" %ex)
+        return 1
 
 ###def _checkcvmfs(self):
 ###        '''

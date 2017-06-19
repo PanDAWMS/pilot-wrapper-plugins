@@ -55,8 +55,7 @@ class SysPath(object):
         for i in pythonpath:
             if i != "":
                 i = removeslash(i) 
-                if i not in newsyspath:
-                    newsyspath.append(i)
+                newsyspath.append(i)
         newsyspath += self.system
 
         sys.path = newsyspath
@@ -164,83 +163,106 @@ class Tarball(object):
         
 
 
-###class source(object):
-###
-###    def __init__(self):
-###        self.syspath = SysPath()
-###
-###    def __call__(self, setupcmd):
-###        # env vars that should not change
-###        excluded  = ['_', 'SHLVL']
-###
-###        # record the current env 
-###        oldenv = {}
-###        for k,v in os.environ.iteritems():
-###            oldenv[k] = v 
-###
-###        # step 1
-###        fd1, envtmpfilename = tempfile.mkstemp()
-###        fd2, rctmpfilename = tempfile.mkstemp()
-###
-###        # step 2
-###        # check is setupcmd already ends with ; to avoid adding a second one.
-###        # a commands like  "blah ;; blah" will fail because of the double ;;
-###        if setupcmd.endswith(';'):
-###                setupcmd = setupcmd[:-1]
-###        # check if setupcmd starts or not with "source" or "."
-###        if not setupcmd.startswith('source') and not setupcmd.startswith('.'):
-###                setupcmd = 'source %s' %setupcmd
-###
-###        cmd = '%s; echo $? > %s; printenv | sort > %s' %(setupcmd, rctmpfilename, envtmpfilename)
-###        cmdout = commands.getoutput(cmd)
-###        # so here cmdout is the outptu of setupcmd, 
-###        # while tmpfile contains the new environment
-###
-###        # step 4
-###        envtmpfile = open(envtmpfilename)
-###        rctmpfile = open(rctmpfilename)
-###
-###        # rctmpfilename only has one line, so we read rctmpfilename.readlines()[0]
-###        # and we remove the trailing \n with [:1]
-###        # and finally we convert the rc into an integer
-###        rc = int( rctmpfile.readlines()[0][:1] )
-###
-###        out = envtmpfile.readlines()
-###        for line in out:
-###                line = line[:-1]
-###                key = line.split('=')[0]
-###                value = '='.join(line.split('=')[1:])
-###                if key not in excluded:
-###                    os.environ[key] = value
-###
-###        # step 5
-###        envtmpfile.close()
-###        os.remove(envtmpfilename)
-###        rctmpfile.close()
-###        os.remove(rctmpfilename)
-###
-###        # step 6
-###        pp_in_env = os.environ.get('PYTHONPATH', None)
-###        if pp_in_env:
-###            pp = pp_in_env.split(':')
-###        else:
-###            pp = []
-###
-###        self.syspath.rebuild(pp)
-###
-###        # return the RC and the output of sourcing setupcmd
-###        return rc, cmdout 
-
-
-
-
 # ---------------------------------------------------------------------------
 #                       F U N C T I O N S 
 # ---------------------------------------------------------------------------
 
-def source(setupcmd):
 
-        syspath = SysPath()
+
+#def source(setupcmd):
+#        """
+#        this is a function to do 'source /path/to/setup.sh'
+#        It is not easy to source a setup file in python. 
+#        commands.getoutput('source /path/to/setup.sh') does not work
+#        because commands executes actions in a subshell.
+#        Trick:
+#                (1) I create 2 temporary files, 
+#                    one to record the RC from the sourcing command, 
+#                    and one to record the new environment
+#                (2) In the same command I source the setup file and 
+#                    record the RC and the entire environment if the temporary file.
+#                (3) I capture the possible output
+#                (4) I read the temporary files, 
+#                    and insert every line in the environment
+#                (5) I remove the temporary files
+#                (6) sys.path need to be updated, since env var PYTHONPATH
+#                    is not reloaded once the python interpreter has started
+#        
+#        NOTE: we first create a copy of the environment to keep record of it
+#        
+#        NOTE: some env vars (in self.excluded) are not meant to change so we keep them 
+#        """
+#
+#        syspath = SysPath() 
+#
+#        # env vars that should not change
+#        excluded  = ['_', 'SHLVL']
+#
+#        # record the current env 
+#        oldenv = {}
+#        for k,v in os.environ.iteritems():
+#            oldenv[k] = v
+#
+#        # step 1
+#        fd1, envtmpfilename = tempfile.mkstemp()
+#        fd2, rctmpfilename = tempfile.mkstemp()
+#
+#        # step 2
+#        # check is setupcmd already ends with ; to avoid adding a second one.
+#        # a commands like  "blah ;; blah" will fail because of the double ;;
+#        if setupcmd.endswith(';'):
+#                setupcmd = setupcmd[:-1]
+#        cmd = '%s; echo $? > %s; printenv | sort > %s' %(setupcmd, rctmpfilename, envtmpfilename)
+#        cmdout = commands.getoutput(cmd)
+#        # so here cmdout is the output of setupcmd, 
+#        # while rctmpfilename contains the RC of sourcing setupcmd
+#        # and envtmpfilename constains the new environment
+#
+#        # step 4
+#        envtmpfile = open(envtmpfilename)
+#        rctmpfile = open(rctmpfilename)
+#
+#        # rctmpfilename only has one line, so we read rctmpfilename.readlines()[0]
+#        # and we remove the trailing \n with [:1]
+#        # and finally we convert the rc into an integer
+#        rc = int( rctmpfile.readlines()[0][:1] )
+#        
+#        #for line in f.read().split('\n'):
+#        #        key = line.split('=')[0]
+#        #        value = '='.join(line.split('=')[1:])
+#        #        os.environ[key] = value 
+#        out = envtmpfile.readlines()
+#        for line in out:
+#                line = line[:-1]
+#                key = line.split('=')[0]
+#                value = '='.join(line.split('=')[1:])
+#                if key not in excluded:
+#                    os.environ[key] = value 
+#
+#        # step 5
+#        envtmpfile.close()
+#        os.remove(envtmpfilename)
+#        rctmpfile.close()
+#        os.remove(rctmpfilename)
+#
+#        # step 6
+#        pp_in_env = os.environ.get('PYTHONPATH', None)
+#        if pp_in_env:
+#            pp = pp_in_env.split(':')
+#        else:
+#            pp = []
+#
+#        syspath.rebuild(pp)
+#        
+#        # return the RC and the output of sourcing setupcmd
+#        return rc, cmdout
+
+class source(object):
+
+    def __init__(self):
+        self.syspath = SysPath()
+
+    def __call__(self, setupcmd):
         # env vars that should not change
         excluded  = ['_', 'SHLVL']
 
@@ -270,22 +292,13 @@ def source(setupcmd):
         # step 4
         envtmpfile = open(envtmpfilename)
         rctmpfile = open(rctmpfilename)
-        envtmpfilelines = envtmpfile.readlines()
-        rctmpfilelines = rctmpfile.readlines()
 
-        # we check if files rctmpfile and envtmpfile have actual content
-        # if not, something failed during the souring step
-        # and we abort
-        if envtmpfilelines == [] or rctmpfilelines == []:
-            return 1, ""
-
-        # if everything went OK...
         # rctmpfilename only has one line, so we read rctmpfilename.readlines()[0]
         # and we remove the trailing \n with [:1]
         # and finally we convert the rc into an integer
-        rc = int( rctmpfilelines[0][:1] )
+        rc = int( rctmpfile.readlines()[0][:1] )
 
-        out = envtmpfilelines
+        out = envtmpfile.readlines()
         for line in out:
                 line = line[:-1]
                 key = line.split('=')[0]
@@ -306,10 +319,12 @@ def source(setupcmd):
         else:
             pp = []
 
-        syspath.rebuild(pp)
+        self.syspath.rebuild(pp)
 
         # return the RC and the output of sourcing setupcmd
         return rc, cmdout 
+
+
 
 
 

@@ -1,6 +1,8 @@
 import commands
 import logging
+import os
 import random
+import sys
 
 class PilotCodeManager(object):
     """
@@ -312,7 +314,9 @@ class PilotCodeSource(object):
     def get(self):
 
         rc = self._getpilotcode()
-        if rc != 0:
+        if rc == 0:
+            self._addsyspath()
+        else:
             self.log.critical("getting the pilot code failed")
             return rc
         
@@ -335,9 +339,13 @@ class PilotCodeSource(object):
     def _getpilotcode(self):
 
         if self.source.startswith('http'):
-                rc = self._getfromURL()
-        if self.source.startswith('file'):
-                rc = self._getfromFS()
+            rc = self._getfromURL()
+        elif self.source.startswith('file'):
+            rc = self._getfromFS()
+        else:
+            self.log.critical('pilot source code does not start by "http" nor "file". Aborting')
+            return -1
+            
         return rc 
 
 
@@ -389,6 +397,37 @@ class PilotCodeSource(object):
                 return 1
                 
 
+    
+    def _addsyspath(self):
+        '''
+        add self.source to the sys.path
+        
+        if self.source is an URL, 
+                then just add CWD
+        if self.source is a tarball in the filesystem, 
+                just add CWD
+        if self.source is a file (no tarball) in the filesystem, 
+                add the dirname
+        '''
+    
+        self.log.debug('adding path to pilot code to sys.path')
+
+        if self.source.startswith('http'):
+            self.log.debug('pilot code is got from an URL, adding CWD to sys.path')
+            sys.path.append(os.getcwd())
+        elif self.source.startswith('file'):
+            if self.source.endswith('.tar.gz'):
+                self.log.debug('pilot code is tar file being copied to CWD, adding CWD to sys.path')
+                sys.path.append(os.getcwd())
+            else:
+                self.log.debug('pilot code is got from a file, adding dirname() to sys.path')
+                path = self.source[7:]
+                path = os.path.dirname(path)
+                sys.path.append(path)
+
+        self.log.debug('path to pilot code added to sys.path')
+
+
 
     def _validatechecksum(self):
         """
@@ -426,7 +465,7 @@ class PilotCodeSource(object):
         # FIXME: find a better way
         if not self.filename.endswith('.tar.gz'):
             self.log.debug('filename is not a tar.gz file. Nothing to do.')
-            return
+            return 0
         
         cmd = 'tar zxvf %s' %self.filename
         rc,out = commands.getstatusoutput(cmd)
