@@ -1,0 +1,9 @@
+starting on version 1.0.0, rules are
+
+    * even numbers for production releases
+    * odd numbers for development releases
+
+Note:
+
+    * 1.0.0 is a copy of 0.9.14
+    * 1.0.1 is a copy of 0.9.15
