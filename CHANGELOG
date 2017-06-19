@@ -1,6 +1,33 @@
-1.0.0
+1.0.1
 
-* 0.9.14 renamed 1.0.0
+* 0.9.15 renamed 1.0.1
+
+0.9.15
+
+* calling schedconfig based on wmsqueue, and batchqueue is got from schedconfig['nickname']
+* no rc_msg when pilot returns rc != 0
+* using ...all.json instead of ...pilot.json for schedconfig URL
+* removed self.grid
+* calling the monitor in wrapper.py needs to be done after setting the Logger
+* aborting if undefined env vars needed to call the web monitor
+* extracting real value of wndir in cases like USCD where $OSG_WN_TMP is itself an environment variable
+* using $TMP for pilot input option -d when $OSG_WN_TMP is empty string, 'none' or 'null'
+* input options --wrappervo and --wrappergrid eliminated
+* in the case of ATLAS, converting RC=65 to RC=0
+* not running post_run( ) if run( ) failed, so we can return an non-zero RC
+* making use of pilotsource.py classes to get the pilot tarball
+* calling method _untar( ) from within PilotCodeSource( ) class
+* calling _cvmfs() from validations.py instead of plugin class method
+* implemented methods _presetup( ) and _postsetup( )
+* implemented generic method _readschedconfig( )
+* root logger named "wrapper" instead of "main"
+* option --wapperpilotcodeurl removed
+* added option --wrapperpilotcoderatio
+* calling monitor from wrapper.py
+* removed input option --wrappermode
+* removed input option --wrapperpurpose
+* complete new code to deal with pilot code, allowing for the new wrapper input options and formats
+* code to call monitor implemented in python
 
 0.9.14
 

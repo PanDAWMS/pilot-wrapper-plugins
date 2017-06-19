@@ -1,6 +1,14 @@
 #!/usr/bin/env python 
 
 
+######################################################
+#                               
+#           FIXME: CHECK IF THIS PLUGIN NEEDS 
+#                  TO BE FIXED
+#
+######################################################
+
+
 import commands
 from base import Base
 import wrapperexceptions as exceptions

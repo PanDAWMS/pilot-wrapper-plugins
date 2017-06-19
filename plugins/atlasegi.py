@@ -18,12 +18,12 @@ except ImportError, err:
 
 
 
-class atlasosg(atlas):
+class atlasegi(atlas):
        
         def __init__(self, opts):
      
-                super(atlasosg,self).__init__(opts) 
-                self.log.info('atlasosg: Object initialized.')
+                super(atlasegi,self).__init__(opts) 
+                self.log.info('atlasegi: Object initialized.')
 
         # =========================================================== 
         #                      PRE-PROCESS 
@@ -33,7 +33,7 @@ class atlasosg(atlas):
         def pre_run(self):
 
                 self.log.debug('pre_run: Starting.')
-                super(atlasosg,self).pre_run() 
+                super(atlasegi,self).pre_run() 
                 self.log.debug('pre_run: Leaving.')
                 return 0  # FIXME: check every step
         
@@ -45,7 +45,7 @@ class atlasosg(atlas):
         def run(self):
 
                 self.log.debug('run: Starting.')
-                super(atlasosg,self).run() 
+                super(atlasegi,self).run() 
                 self.log.debug('run: Leaving.')
                 return self.rc 
 
@@ -56,6 +56,6 @@ class atlasosg(atlas):
 
         def post_run(self):
                 self.log.debug('post_run: Starting.')
-                super(atlasosg,self).post_run() 
+                super(atlasegi,self).post_run() 
                 self.log.debug('post_run: Leaving.')
                 return 0  # FIXME!! check every step !! 

@@ -19,7 +19,7 @@ class Base(object):
 
         def __init__(self, opts):
 
-                self.log = logging.getLogger('main.base')
+                self.log = logging.getLogger('wrapper.base')
                 self.opts = opts
                 self.rc = 0
                 self.log.info('Base: Object initialized.')
@@ -36,18 +36,19 @@ class Base(object):
                 self.rc = self.pre_run()
                 if self.rc != 0:
                     self.log.critical('execute: pre_run() failed with RC=%s. Aborting.' %self.rc)
-                    return
+                    return self.rc
 
                 self.rc = self.run()
                 if self.rc != 0:
                     self.log.error('execute: run() failed with RC=%s.' %self.rc)
+                    return self.rc
 
                 self.rc = self.post_run()
                 if self.rc != 0:
                     self.log.error('execute: post_run() failed with RC=%s.' %self.rc)
+                    return self.rc
 
-                self.log.debug('execute: Leaving with Rc=%s.' %self.rc)
-                return self.rc
+                return 0
 
         def pre_run(self):
             raise NotImplementedError

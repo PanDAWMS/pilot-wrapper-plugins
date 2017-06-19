@@ -18,6 +18,7 @@ import time
 #                       C L A S S E S 
 # ---------------------------------------------------------------------------
 
+log = logging.getLogger('wrapper.utils')
 
 class SysPath(object):
 
@@ -64,7 +65,7 @@ class Tarball(object):
 
         def __init__(self, baseurl, filename):
 
-                self.log = logging.getLogger("main.tarball")
+                self.log = logging.getLogger("wrapper.tarball")
 
                 self.baseurl = baseurl 
                 self.filename = filename 
@@ -279,6 +280,10 @@ class source(object):
         # a commands like  "blah ;; blah" will fail because of the double ;;
         if setupcmd.endswith(';'):
                 setupcmd = setupcmd[:-1]
+        # check if setupcmd starts or not with "source" or "."
+        if not setupcmd.startswith('source') and not setupcmd.startswith('.'):
+                setupcmd = 'source %s' %setupcmd
+
         cmd = '%s; echo $? > %s; printenv | sort > %s' %(setupcmd, rctmpfilename, envtmpfilename)
         cmdout = commands.getoutput(cmd)
         # so here cmdout is the outptu of setupcmd, 
@@ -376,7 +381,6 @@ def getScriptIndex(weights):
 
 def _displayenv(id):
 
-        log = logging.getLogger('main.utils')
         log.debug('%s: environment upgraded' %id)
         log.debug(getenv())
         log.debug('%s: version of python is %s' %(id, commands.getoutput('python -V')))
@@ -388,14 +392,11 @@ def _printsyspath(id):
         prints out the new content of sys.path
         """
 
-        log = logging.getLogger('main.utils')
         log.debug('%s: sys.path upgraded' %id)
         log.debug(sys.path)
 
 
 def _testproxy():
-
-        log = logging.getLogger('main.utils')
 
         log.debug('_testproxy: Starting.')
 

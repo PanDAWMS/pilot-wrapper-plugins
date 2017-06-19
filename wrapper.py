@@ -4,7 +4,7 @@
 this is the module wrapper.py
 '''
 
-wrapper_tarball_version = "1.0.0"
+wrapper_tarball_version = "1.0.1"
 
 import commands
 import getopt
@@ -14,6 +14,7 @@ import time
 import xml.dom.minidom
 
 import wrapperutils as utils
+import monitor
 
 print "this is module wrapper.py version %s" %wrapper_tarball_version
 
@@ -27,35 +28,31 @@ class Options(object):
         ''' 
         class to handle the input options.
         These options are:
-                - vo              = the VO
-                - wmsqueue        = the PanDA site
-                - batchqueue      = the PanDA queue
-                - grid            = the grid flavor (osg, egee, ...)
-                - purpose         = the specific purpose (osg, atlasprod, atlasanalysis, ...)
-                - url             = url with the pyton tarball to be downloaded
-                - pilotcodeurl    = base url with the pilot tarball to be downloaded 
-                - extraopts       = everything else. Most probably option for the pilot.
-                - pilotcode       = the final pilot code to be executed. 
-                - debug           = a flag to activate high verbosity mode. 
-                - tarballchecksum = the checksum to validate the wrapper tarball (to be ignored)
-                - pilotcodechecksum = the checksum to validate the pilot code tarball
+                - wmsqueue          = the PanDA site
+                - pilotcode         = URIs with the pilot code, either a tarball or directly code to be invoked
+                                      Example:   [/cvmfs/atlas.cern.ch/../pilot.py, http://bnl.gov/../pilot.tar.gz, http://atlas.cern.ch/../pilot.tar.gz], http://atlas.cern.ch/../pilot-rc.tar.gz
+                                      which means, treat the first 3 together as a group, with failover from one to another, and the last one is another group
+                - pilotcodechecksum = the checksums to validate the pilot code tarball
+                                      Example:   None, 123, 123, 456
+                                      Each one corresponding to each source in the pilotcode variable
+                - pilotcoderatio    = the frequency ratios between the different pilot code sources 
+                                      Example: 99,1
+                                      which means try to first group in pilot code 99% of times, and the second group 1% of times
+                - extraopts         = everything else. Most probably option for the pilot.
+                - pilotcode         = the final pilot code to be executed. 
+                - tarballchecksum   = the checksum to validate the wrapper tarball (to be ignored)
         ''' 
 
         def __init__(self):
 
-                self.vo = ""
                 self.wmsqueue = ""
-                self.batchqueue = ""       
-                self.grid = ""
-                self.purpose = ""
                 self.wrappertarballurl = ""
-                self.pilotcodeurl = ""
                 self.pilotcode = ""
+                self.pilotcodechecksum = ""
+                self.pilotcoderatio = ""
                 self.plugin = ""
                 self.loglevel = ""
-                self.mode = ""
                 self.tarballchecksum = ""
-                self.pilotcodechecksum = ""
                 self.extraopts = ""
 
         def parse(self, input=sys.argv[1:]):
@@ -67,48 +64,33 @@ class Options(object):
 
                 try:
                         opts, args = getopt.getopt(input, "", 
-                                           ["wrappervo=",
-                                            "wrapperwmsqueue=", 
-                                            "wrapperbatchqueue=",
-                                            "wrappergrid=",
-                                            "wrapperpurpose=",
+                                            ["wrapperwmsqueue=", 
                                             "wrappertarballurl=",
-                                            "wrapperpilotcodeurl=",
                                             "wrapperplugin=",
                                             "wrapperpilotcode=",
-                                            "wrapperloglevel=",
-                                            "wrappermode=",
-                                            "wrappertarballchecksum=",
                                             "wrapperpilotcodechecksum=",
+                                            "wrapperpilotcoderatio=",
+                                            "wrapperloglevel=",
+                                            "wrappertarballchecksum=",
                                             "extraopts="])
                 except getopt.GetoptError, err:
                         print str(err)
 
                 for k,v in opts:
-                        if k == "--wrappervo":
-                                self.vo= v
                         if k == "--wrapperwmsqueue":
                                 self.wmsqueue = v
-                        if k == "--wrapperbatchqueue":
-                                self.batchqueue = v
-                        if k == "--wrappergrid":
-                                self.grid = v
-                        if k == "--wrapperpurpose":
-                                self.purpose = v
                         if k == "--wrappertarballurl":
                                 self.wrappertarballurl = v
-                        if k == "--wrapperpilotcodeurl":
-                                self.pilotcodeurl = v
                         if k == "--wrapperplugin":
                                 self.plugin = v
                         if k == "--wrapperpilotcode":
                                 self.pilotcode = v
-                        if k == "--wrapperloglevel":
-                                self.loglevel = v
-                        if k == "--wrappermode":
-                                self.mode = v
                         if k == "--wrapperpilotcodechecksum":
                                 self.pilotcodechecksum = v
+                        if k == "--wrapperpilotcoderatio":
+                                self.pilotcoderatio = v
+                        if k == "--wrapperloglevel":
+                                self.loglevel = v
                         if k == "--extraopts":
                                 self.extraopts += " " + v
 
@@ -132,7 +114,7 @@ class Options(object):
 
                 '''
 
-                self.log = logging.getLogger('main')
+                self.log = logging.getLogger('wrapper')
 
                 if major == 2 and minor == 4:
                     FORMAT='%(asctime)s (UTC) [ %(levelname)s ] %(name)s %(filename)s:%(lineno)d : %(message)s'
@@ -169,14 +151,11 @@ class Options(object):
                 print the value of input options
                 '''
                 print "wmsqueue = ", self.wmsqueue
-                print "batchqueue = ", self.batchqueue
-                print "grid = ", self.grid
-                print "purpose = ", self.purpose
                 print "wrappertarballurl = ", self.wrappertarballurl
-                print "wrapperpilotcodeurl = ", self.pilotcodeurl
                 print "plugin = ", self.plugin
                 print "pilotcode = ", self.pilotcode
                 print "pilotcodechecksum = ", self.pilotcodechecksum
+                print "pilotcoderatio = ", self.pilotcoderatio
                 print "extraopts = ", self.extraopts
                                         
 
@@ -189,7 +168,7 @@ class Execution(object):
         '''
         def __init__(self, opts):
 
-                self.log = logging.getLogger("main.execution")
+                self.log = logging.getLogger("wrapper.execution")
                 self.opts = opts
                 self.plugin_obj = None
                 self.log.debug("Execution: Object initialized.")
@@ -212,10 +191,7 @@ class Execution(object):
 
                 self.log.debug('getplugin: Starting')
 
-                ### BEGIN TEST 0.9.13 ###
-                #plugin_module_name = self.opts.plugin + 'plugin'
                 plugin_module_name = self.opts.plugin
-                ### END TEST 0.9.13 ###
                 self.log.debug('getplugin: plugin selected is %s' %plugin_module_name)
                 plugin_module = __import__('plugins.%s' %plugin_module_name, 
                                             globals(), 
@@ -253,17 +229,24 @@ class Execution(object):
 # ---------------------------------------------------------------------------
 
 def main():
+    
+
         opts = Options()
         opts.parse()
         opts.setuplog()
         opts.display()
         
+        # calling the monitor needs to be done after setting the Logger
+        monitor.monping('running')
+        
         execute = Execution(opts)
         try:
             rc = execute.execute()
+            monitor.monping('exiting', rc)
             sys.exit(rc)
         except Exception, ex:
             print "Exception captured: %s" %ex
+            monitor.monping('exiting', 1)
             sys.exit(1)
             
 
