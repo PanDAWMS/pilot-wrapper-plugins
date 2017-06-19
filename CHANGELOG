@@ -1,0 +1,83 @@
+1.0.0
+
+* 0.9.14 renamed 1.0.0
+
+0.9.14
+
+* method _setupWN() split into 2 methods: _setupWN() and _setupatlas()
+* source() back to be a class instead of a function, at least for now
+* added check for cvmfs
+* entire refactoring of plugins. 
+  New ones created: atlas.py and atlasosg.py. 
+  Old one base.py simplified.
+  Removed string "plugin" from filenames
+  Directory wrapperplugins/ renamed plugins/
+* printing the new sys.path after each source
+* bug fixed when -s <wmsqueue> was passed to a variable meant to just be a path, not a command
+* raising exceptions when the setup.sh file does not exist
+* new WrapperException classes created
+* function source() now returns the RC of the sourcing command and the output of that command.
+* minor code refactoring
+
+0.9.13
+
+* not sourcing cctools setup.sh file
+* download schedconfig from new URL, in JSON format
+* added check for cvmfs
+
+0.9.12 
+
+* added explanatory msg to the RC log message in run() method for atlasprodpilotplugin.py
+* if-else implemented in atlasprodpilotplugin.py and atlasprodpilottestplugin.py
+  just in case ifconfig is not available. 
+* pre_run() in TrivialPlugin returns an RC
+* the lookup table removed
+* added 2 variables for wrapper tarball checksum (to be ignored) and pilotcode tarball checksum
+
+0.9.11  (skipping version 0.9.10)
+
+* passing wmsqueue as input option -s to local/setup.sh
+
+0.9.9
+
+* Fix bug in source() to return both output of setup command and new environment,
+  and not only the environment.
+* passing same pilot args to the arbitrary script in atlasprodpilottestplugin.py
+  as done for pilot code in atlasprodpilotplugin.py
+
+0.9.8
+
+* new plugin atlasprodpilottestplugin to run arbitrary plugin scripts.
+  A new entry in the lookup table to use this new testing plugin, with PURPOSE=TEST
+  The previous label PURPOSE=TESTING moved to PURPOSE=TESTPILOT
+* returning the output of __call__() method in class source.
+  Printing that output after calls to source() at DEBUG level.
+* Better log messages when trying curl command. 
+  Also some messages move from info -> warning and from error -> critical.
+* Checking every step in method execute() in base.py
+
+0.9.7
+
+* Loop within method _schedconfigsetup() in plugin atlasprodpilotplugin
+  to try the curl command 3 times in case of failure.
+  Aborting wrapper with the 3 attempts failed. 
+
+0.9.6
+
+* source() is a class instead of a function, using class SysPath
+* improved FORMAT for log messages.
+* plugin atlasprodpilot does not search for python binaries.
+* plugin atlasprodpilot adds -h and -s inputs to the pilot, if not done at the command line.
+* plugin atlasprodpilot captures RC from pilot.runMain()
+  wrapper.py captures the RC from the plugin, and sys.exit(RC) 
+* some env vars are not meant to change in source(), so their value is not overriden.
+* in wrapperutils.py, after sourcing a setup file and updating the os.environ[],
+  we recreate sys.path because env var PYTHONPATH is not re-read once the 
+  python interpreter has been launched. 
+* plugin atlasprodpilot adds -d as value of $OSG_WN_TMP or $TMP, if not done at the command line.
+* allowing getting the pilotcode tarball from disk, not only URL
+* added some debug info on the tarball download task
+
+-- This CHANGELOG file was created on 2013-06-05, 
+   where version of wrapper.py on the trunk was "0.9.6"
+
