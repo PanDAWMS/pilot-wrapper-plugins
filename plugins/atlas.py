@@ -78,6 +78,7 @@ class atlas(Base):
 
         # FIXME: this should be in a better place. But for the time being...
         os.environ['ATLAS_SETUP_BASE_DIR'] = '/cvmfs/atlas.cern.ch/repo/sw/'  #DEFAULT
+        os.environ['ATLAS_LOCAL_ROOT_BASE'] = '/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase'
         
         # FIXME: ?? should it be an exception instead of an RC ??
         rc = self._presetup()
@@ -181,8 +182,14 @@ class atlas(Base):
     
         self.log.debug('_setupddm: Starting.')
     
-        basedir = os.environ['ATLAS_SETUP_BASE_DIR']
-        setuppath = os.path.join(basedir, 'ddm/latest/setup.sh')
+        # BEGIN TEST #
+        # new way to source rucio
+        #basedir = os.environ['ATLAS_SETUP_BASE_DIR']
+        #setuppath = os.path.join(basedir, 'ddm/latest/setup.sh')
+        basedir = os.environ['ATLAS_LOCAL_ROOT_BASE']
+        setuppath = os.path.join(basedir, 'x86_64/rucio-clients/current/setup.sh')
+        # END TEST #
+
 
         if not os.path.isfile(setuppath):
             self.log.info('setupddm: setup file %s does not exist' %setuppath)
@@ -193,8 +200,8 @@ class atlas(Base):
             ###rc, out = self.source(cmd)
             rc, out = utils.source(cmd)
             self.log.debug('_setupddm: rc, output of sourcing cmd %s:\n%s\n%s' %(cmd, rc, out))
-            utils._displayenv('ddm/latest/setup.sh')
-            utils._printsyspath('ddm/latest/setup.sh')
+            utils._displayenv('rucio setup')
+            utils._printsyspath('rucio setup')
     
         self.log.debug('_setupddm: Leaving.')
         return rc
