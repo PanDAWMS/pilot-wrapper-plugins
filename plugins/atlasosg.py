@@ -252,6 +252,7 @@ class atlasosg(atlas):
                 import rucio
                 self.log.info('_setuprucio: rucio is already import-able. Doing nothing else.')
                 self.log.info('_setuprucio: location of rucio package is %s' %rucio.__file__)
+                return 0
             except:
                 self.log.info('_setuprucio: failed to import rucio. Sourcing lsetup')
                 cmd = 'source %s -s %s' %(setuppath, self.opts.wmsqueue)
