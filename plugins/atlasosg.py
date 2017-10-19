@@ -53,6 +53,12 @@ class atlasosg(atlas):
                     self.log.critical('something went wrong with _schedconfigsetup. Aborting.')
                     return rc
 
+                # TEMPORARY, to test sourcing rucio
+                rc = self._setuprucio() 
+                if rc != 0:
+                    self.log.critical('something went wrong with _setuprucio. Aborting.')
+                    return rc
+
                 self.log.debug('pre_run: Leaving.')
                 return 0  # FIXME: check every step
         
@@ -227,6 +233,40 @@ class atlasosg(atlas):
         
                 self.log.debug('_schedconfigsetup: Leaving')
                 return 0
+
+
+
+
+        ### BEGIN TEST ###
+        # setup rucio in the new way 
+        def _setuprucio(self):
+
+            self.log.debug('_setuprucio: Starting.')
+    
+            basedir = os.environ['ATLAS_LOCAL_ROOT_BASE']
+            setuppath = os.path.join(basedir, 'x86_64/rucio-clients/current/setup.sh')
+
+            # first, lets check if rucio is already set
+            # we just try to import it
+            try:
+                import rucio
+                self.log.info('_setuprucio: rucio is already import-able. Doing nothing else.')
+                self.log.info('_setuprucio: location of rucio package is %s' %rucio.__file__)
+            except:
+                self.log.info('_setuprucio: failed to import rucio. Sourcing lsetup')
+                cmd = 'source %s -s %s' %(setuppath, self.opts.wmsqueue)
+                self.log.info('_setuprucio: sourcing command: %s' %cmd)
+                ###rc, out = self.source(cmd)
+                rc, out = utils.source(cmd)
+                self.log.debug('_setuprucio: rc, output of sourcing cmd %s:\n%s\n%s' %(cmd, rc, out))
+                utils._displayenv('_ruciosetup')
+                utils._printsyspath('_ruciosetup')
+    
+                self.log.debug('_setuprucio: Leaving.')
+                return rc
+        ### BEGIN TEST ###
+        
+
 
         
         # =========================================================== 
