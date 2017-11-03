@@ -92,11 +92,11 @@ class atlas(Base):
             self.log.critical('something went wrong with atlas setup. Aborting.')
             return rc
         
-        # FIXME: ?? should it be an exception instead of an RC ??
-        rc = self._setupddm()
-        if rc != 0:
-            self.log.critical('something went wrong with atlas setup. Aborting.')
-            return rc
+#        # FIXME: ?? should it be an exception instead of an RC ??
+#        rc = self._setupddm()
+#        if rc != 0:
+#            self.log.critical('something went wrong with atlas setup. Aborting.')
+#            return rc
         
         # FIXME: ?? should it be an exception instead of an RC ??
         rc = self._postsetup()
