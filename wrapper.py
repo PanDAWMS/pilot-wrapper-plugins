@@ -113,8 +113,10 @@ class Options(object):
                         if k == "--wrapperpilotcodechecksum":
                                 self.pilotcodechecksum = v
                         if k == "--wrapperrunpilotinsubshell":
-                                # FIXME: this is a temporary hack
+                            if v == 'True':
                                 self.shell = True
+                            if v == 'False':
+                                self.shell = False
                         if k == "--extraopts":
                                 self.extraopts += " " + v
 
