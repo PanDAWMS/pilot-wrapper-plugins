@@ -27,18 +27,19 @@ class Options(object):
         ''' 
         class to handle the input options.
         These options are:
-                - vo              = the VO
-                - wmsqueue        = the PanDA site
-                - batchqueue      = the PanDA queue
-                - grid            = the grid flavor (osg, egee, ...)
-                - purpose         = the specific purpose (osg, atlasprod, atlasanalysis, ...)
-                - url             = url with the pyton tarball to be downloaded
-                - pilotcodeurl    = base url with the pilot tarball to be downloaded 
-                - extraopts       = everything else. Most probably option for the pilot.
-                - pilotcode       = the final pilot code to be executed. 
-                - debug           = a flag to activate high verbosity mode. 
-                - tarballchecksum = the checksum to validate the wrapper tarball (to be ignored)
+                - vo                = the VO
+                - wmsqueue          = the PanDA site
+                - batchqueue        = the PanDA queue
+                - grid              = the grid flavor (osg, egee, ...)
+                - purpose           = the specific purpose (osg, atlasprod, atlasanalysis, ...)
+                - url               = url with the pyton tarball to be downloaded
+                - pilotcodeurl      = base url with the pilot tarball to be downloaded 
+                - extraopts         = everything else. Most probably option for the pilot.
+                - pilotcode         = the final pilot code to be executed. 
+                - debug             = a flag to activate high verbosity mode. 
+                - tarballchecksum   = the checksum to validate the wrapper tarball (to be ignored)
                 - pilotcodechecksum = the checksum to validate the pilot code tarball
+                - shell             = to decide if running pilot code in a subshell or not
         ''' 
 
         def __init__(self):
@@ -56,6 +57,7 @@ class Options(object):
                 self.mode = ""
                 self.tarballchecksum = ""
                 self.pilotcodechecksum = ""
+                self.shell = False
                 self.extraopts = ""
 
         def parse(self, input=sys.argv[1:]):
@@ -80,6 +82,7 @@ class Options(object):
                                             "wrappermode=",
                                             "wrappertarballchecksum=",
                                             "wrapperpilotcodechecksum=",
+                                            "wrapperrunpilotinsubshell=",
                                             "extraopts="])
                 except getopt.GetoptError, err:
                         print str(err)
@@ -109,6 +112,8 @@ class Options(object):
                                 self.mode = v
                         if k == "--wrapperpilotcodechecksum":
                                 self.pilotcodechecksum = v
+                        if k == "--wrapperrunpilotinsubshell":
+                                self.shell = v
                         if k == "--extraopts":
                                 self.extraopts += " " + v
 

@@ -3,6 +3,7 @@
 import commands
 import getopt
 import os
+import subprocess
 import time
 
 from base import Base
@@ -172,18 +173,56 @@ class atlas(Base):
         def run(self):
 
                 self.log.debug('run: Starting.')
-
                 pilotargs = self._pilotargs()
-                self.log.debug('run: pilot args are = %s' %pilotargs)
+                if self.shell:
+                    self.rc = self._run_shell(pilotargs)
+                else:
+                    self.rc = self._run(pilotargs)
+                return self.rc 
 
+
+        def _run(self, opt_l):
+                """
+                runs the pilot in the same process
+                opt_l is a list of input parameters for method pilot.runMain()
+                """
+                self.log.debug('Starting.')
+                self.log.debug('pilot args are = %s' %opt_l)
                 # import and invoke the ATLAS pilot code
                 import pilot
-                self.rc = pilot.runMain(pilotargs)
+                self.rc = pilot.runMain(opt_l)
+                msg = rc_msg.get(self.rc, "")
+                if msg:
+                    msg = "(%s)" %msg
+                if self.rc != 0:                
+                    self.log.warning('pilot returned rc=%s %s' %(self.rc, msg))
+                else:
+                    self.log.info('pilot returned rc=0')
+                self.log.debug('Leaving with rc=%s.' %self.rc)
+                return self.rc 
+
+
+        def _run_shell(self, opt_l):
+                """
+                runs the pilot in a subshell 
+                opt_l is a list of input parameters for method pilot.runMain()
+                """
+
+                self.log.debug('Starting.')
+                self.log.debug('pilot args are = %s' %opt_l)
+
+                cmd = 'python pilot.py '
+                for opt in opt_l:
+                    cmd += opt
+
+                pilot_shell = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+                out = None
+                (out, err) = pilot_shell.communicate()
+                self.rc = pilot_shell.returncode
 
                 msg = rc_msg.get(self.rc, "")
                 if msg:
                     msg = "(%s)" %msg
-
                 
                 if self.rc != 0:                
                     self.log.warning('run: pilot returned rc=%s %s' %(self.rc, msg))
@@ -192,6 +231,8 @@ class atlas(Base):
 
                 self.log.debug('run: Leaving with rc=%s.' %self.rc)
                 return self.rc 
+
+
 
         def _pilotargs(self):
                 """

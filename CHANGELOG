@@ -1,3 +1,8 @@
+singularity-1.0.0
+
+* added input option --wrapperrunpilotinsubshell, with default value = False
+* depending on the value of --wrapperrunpilotinsubshell, the pilot code is use in the same python process or in a subshell
+
 1.0.0
 
 * 0.9.14 renamed 1.0.0
