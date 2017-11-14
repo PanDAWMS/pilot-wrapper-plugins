@@ -2,8 +2,10 @@
 
 import commands
 import getopt
+import json
 import os
 import subprocess
+import sys
 import time
 
 from base import Base
@@ -172,13 +174,68 @@ class atlas(Base):
 
         def run(self):
 
-                self.log.debug('run: Starting.')
+            self.log.debug('run: Starting.')
+            ### BEGIN TEST : SINGULARITY ###
+            use_singularity = False  # FIXME: temporary solution
+            if "SINGULARITY_INIT" not in os.environ.keys():
+                container_type, container_options = self._check_for_singularity() 
+                if container_type:
+                    use_singularity = True
+
+            if use_singularity:
+                    self.rc = self._run_singularity(container_options)
+            else:
                 pilotargs = self._pilotargs()
                 if self.shell:
                     self.rc = self._run_shell(pilotargs)
                 else:
                     self.rc = self._run(pilotargs)
-                return self.rc 
+
+            return self.rc 
+            ### END TEST : SINGULARITY ###
+
+
+        ### BEGIN TEST : SINGULARITY ###
+        def _run_singularity(self, container_options):
+            """
+            re-run the wrapper inside the container
+            """
+            self.log.debug('attempt to re-run the wrapper inside the container')
+
+            os.environ['SINGULARITYENV_PATH'] = os.environ['PATH']
+            os.environ['SINGULARITYENV_LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']
+
+            wrapper_cmd = 'python '
+            wrapper_cmd += '%s/wrapper.py' %os.getcwd()
+            wrapper_cmd += ' '.join(sys.argv[1:])
+            cmd = 'singularity exec %s /cvmfs/atlas.cern.ch/repo/images/x86_64-slc6.img %s' %(container_options, wrapper_cmd) 
+            self.log.debug('command to re-run the wrapper inside the container is %s' cmd)
+
+            container_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            (out, err) = container_process.communicate()
+            self.rc = container_process.returncode
+            self.log.debug('rc from re-running the wrapper inside the container was %s' %rc)
+            return self.rc
+
+          
+
+        def _check_for_singularity(self):
+            """
+            check if there fields in AGIS related container
+            have any info
+            """
+            self.log.debug('checking for container-related fields in AGIS')
+            cmd = 'curl --connect-timeout 20 --max-time 120 -sS "http://pandaserver.cern.ch:25085/cache/schedconfig/%s.pilot.json"' %self.opts.batchqueue
+            self.log.debug('curl command is %s' %cmd)
+            rc, out = commands.getstatusoutput(cmd)
+            #FIXME
+            # check if rc is 0 or not. For now, we assume curl worked fine
+            doc = json.loads(out)
+            container_type = doc['container_type']
+            container_options = doc['container_options']
+            # FIXME: temporary solution
+            return container_type, container_options
+        ### END TEST : SINGULARITY ###
 
 
         def _run(self, opt_l):
