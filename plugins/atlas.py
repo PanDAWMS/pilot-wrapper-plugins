@@ -179,7 +179,7 @@ class atlas(Base):
             use_singularity = False  # FIXME: temporary solution
             if "SINGULARITY_INIT" not in os.environ.keys():
                 container_type, container_options = self._check_for_singularity() 
-                if container_type:
+                if container_type == 'singularity:wrapper':
                     use_singularity = True
 
             if use_singularity:
