@@ -213,6 +213,9 @@ class atlas(Base):
 
             container_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
             (out, err) = container_process.communicate()
+            self.log.debug('dumping the output of running singularity command:')
+            self.log.info(out)
+            self.log.debug('output from singularity command ends here')
             self.rc = container_process.returncode
             self.log.debug('rc from re-running the wrapper inside the container was %s' %rc)
             return self.rc
