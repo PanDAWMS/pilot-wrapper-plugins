@@ -228,7 +228,7 @@ class atlas(Base):
             have any info
             """
             self.log.debug('checking for container-related fields in AGIS')
-            cmd = 'curl --connect-timeout 20 --max-time 120 -sS "http://pandaserver.cern.ch:25085/cache/schedconfig/%s.pilot.json"' %self.opts.batchqueue
+            cmd = 'curl --connect-timeout 20 --max-time 120 -sS "http://pandaserver.cern.ch:25085/cache/schedconfig/%s.all.json"' %self.opts.batchqueue
             self.log.debug('curl command is %s' %cmd)
             rc, out = commands.getstatusoutput(cmd)
             #FIXME
