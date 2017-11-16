@@ -186,7 +186,7 @@ class atlas(Base):
                     self.rc = self._run_singularity(container_options)
             else:
                 pilotargs = self._pilotargs()
-                if self.shell:
+                if self.opts.shell:
                     self.rc = self._run_shell(pilotargs)
                 else:
                     self.rc = self._run(pilotargs)
