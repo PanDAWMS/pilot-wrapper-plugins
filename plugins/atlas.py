@@ -179,6 +179,8 @@ class atlas(Base):
             use_singularity = False  # FIXME: temporary solution
             if "SINGULARITY_INIT" not in os.environ.keys():
                 container_type, container_options = self._check_for_singularity() 
+                self.log.info('container_type = %s' %container_type)
+                self.log.info('container_options = %s' %container_options)
                 if container_type == 'singularity:wrapper':
                     use_singularity = True
 
@@ -206,7 +208,7 @@ class atlas(Base):
             os.environ['SINGULARITYENV_LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']
 
             wrapper_cmd = 'python '
-            wrapper_cmd += '%s/wrapper.py' %os.getcwd()
+            wrapper_cmd += '%s/wrapper.py ' %os.getcwd()
             wrapper_cmd += ' '.join(sys.argv[1:])
             cmd = 'singularity exec %s /cvmfs/atlas.cern.ch/repo/images/x86_64-slc6.img %s' %(container_options, wrapper_cmd) 
             self.log.debug('command to re-run the wrapper inside the container is %s' %cmd)
@@ -217,7 +219,7 @@ class atlas(Base):
             self.log.info(out)
             self.log.debug('output from singularity command ends here')
             self.rc = container_process.returncode
-            self.log.debug('rc from re-running the wrapper inside the container was %s' %rc)
+            self.log.debug('rc from re-running the wrapper inside the container was %s' %self.rc)
             return self.rc
 
           
