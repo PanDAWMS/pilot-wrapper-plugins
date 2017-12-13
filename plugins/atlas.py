@@ -210,7 +210,7 @@ class atlas(Base):
             wrapper_cmd = 'python '
             wrapper_cmd += '%s/wrapper.py ' %os.getcwd()
             wrapper_cmd += ' '.join(sys.argv[1:])
-            cmd = 'singularity exec %s /cvmfs/atlas.cern.ch/repo/images/singularity/x86_64-slc6.img %s' %(container_options, wrapper_cmd) 
+            cmd = 'singularity exec %s /cvmfs/atlas.cern.ch/repo/containers/images/singularity/x86_64-centos6.img %s' %(container_options, wrapper_cmd) 
             self.log.debug('command to re-run the wrapper inside the container is %s' %cmd)
 
             container_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
